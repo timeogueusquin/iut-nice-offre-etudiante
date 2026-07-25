@@ -11,7 +11,6 @@ Ce système a été conçu pour être entièrement gérable par les responsables
 * Le Portail Web (Étudiants) : [iut-nice-offre-etudiante.vercel.app](https://iut-nice-offre-etudiante.vercel.app/)
 * Le Tableau de Configuration (Enseignants) : [CONFIG_FORMATIONS](https://docs.google.com/spreadsheets/d/1DNQZRR55YODMen7NSfEKrmGR9ygSd9yIda0S5-X-TVU/edit)
 * Le Code Source (GitHub) : [github.com/timeogueusquin/iut-nice-offre-etudiante](https://github.com/timeogueusquin/iut-nice-offre-etudiante)
-* La Console d'exécution automatique (GitHub Actions) : [github.com/timeogueusquin/iut-nice-offre-etudiante/actions](https://github.com/timeogueusquin/iut-nice-offre-etudiante/actions)
 
 ---
 
