@@ -132,10 +132,17 @@ def load_config_rows_from_google_sheet():
     )
 
     client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key(sheet_id)
-    worksheet = spreadsheet.worksheet(CONFIG_SHEET_NAME)
-
-    return worksheet.get_all_records()
+    max_retries = 5
+    for attempt in range(1, max_retries + 1):
+        try:
+            spreadsheet = client.open_by_key(sheet_id)
+            worksheet = spreadsheet.worksheet(CONFIG_SHEET_NAME)
+            return worksheet.get_all_records()
+        except Exception as exc:
+            if attempt == max_retries:
+                raise
+            delay = attempt * 3
+            time.sleep(delay)
 
 def get_row_value_with_fallbacks(row, keys):
     """Récupère la valeur d'une ligne Google Sheet avec gestion robuste de clés alternatives (ex: avec ou sans accents)."""
