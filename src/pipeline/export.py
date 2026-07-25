@@ -67,6 +67,18 @@ def ensure_credentials_file():
 
 # GOOGLE SHEETS
 
+def retry_api_call(func, max_retries=5, initial_delay=3):
+    """Exécute une fonction d'appel API Google avec réessais en cas d'erreur 503 ou réseau temporaire."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            return func()
+        except Exception as e:
+            if attempt == max_retries:
+                raise
+            delay = initial_delay * attempt
+            logger.warning("Tentative API Google %d/%d échouée (%s). Retentative dans %ds...", attempt, max_retries, e, delay)
+            time.sleep(delay)
+
 def connect_google_sheet():
     """Ouvre le classeur Google Sheets cible avec le compte de service."""
     creds = Credentials.from_service_account_file(
@@ -76,11 +88,7 @@ def connect_google_sheet():
 
     client = gspread.authorize(creds)
 
-    spreadsheet = client.open_by_key(
-        GOOGLE_SHEET_ID
-    )
-
-    return spreadsheet
+    return retry_api_call(lambda: client.open_by_key(GOOGLE_SHEET_ID))
 
 def get_or_create_worksheet(spreadsheet, sheet_name, rows=1000):
     """Recupere une feuille existante ou la cree avec les colonnes attendues."""
@@ -173,17 +181,17 @@ def read_excel_sheet(sheet_name):
 
 def upload_sheet(spreadsheet, sheet_name, df):
     """Remplace le contenu d'une feuille Google par les offres nettoyees."""
-    worksheet = get_or_create_worksheet(
+    worksheet = retry_api_call(lambda: get_or_create_worksheet(
         spreadsheet,
         sheet_name,
         rows=max(len(df) + 10, 1000)
-    )
+    ))
 
-    worksheet.clear()
+    retry_api_call(lambda: worksheet.clear())
 
     values = [COLUMNS] + df[COLUMNS].astype(str).values.tolist()
 
-    worksheet.update(values)
+    retry_api_call(lambda: worksheet.update(values))
 
     try:
         worksheet.freeze(rows=1)
